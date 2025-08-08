@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore, doc, setDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+// Firebase設定（teach_index.jsと同じものを使ってください）
 const firebaseConfig = {
   apiKey: "AIzaSyCNbHkPWSQArwCg2LvoqsdJ_8yHbbP6sPs",
   authDomain: "donsuke-karuta.firebaseapp.com",
@@ -13,6 +14,15 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+// URLパラメータからschool名を取得
+const urlParams = new URLSearchParams(window.location.search);
+const schoolName = urlParams.get("school");
+
+if (!schoolName) {
+  alert("学校名がURLパラメータに指定されていません");
+  throw new Error("学校名がURLパラメータに指定されていません");
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("saveBtn").addEventListener("click", async () => {
@@ -29,46 +39,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      const docRef = doc(db, name, "initDoc");
-      await setDoc(docRef, {
+      // schoolsコレクション → schoolNameドキュメント → usersサブコレクション → nameドキュメント
+      const userDocRef = doc(db, "schools", schoolName, "users", name);
+      await setDoc(userDocRef, {
         createdAt: new Date(),
         note: "初期ドキュメント"
       });
-      alert(`${name} コレクションを作成しました！`);
+      alert(`${schoolName} / ${name} を作成しました！`);
     } catch (e) {
       console.error("エラー:", e);
       alert("エラーが発生しました");
-    }
-  });
-
-  document.getElementById("deleteBtn").addEventListener("click", async () => {
-    const name = document.getElementById("name").value.trim();
-
-    if (!name) {
-      alert("削除したいコレクション名を入力してください");
-      return;
-    }
-
-    if (!confirm(`${name} コレクションの全ドキュメントを削除します。本当によろしいですか？`)) {
-      return;
-    }
-
-    try {
-      const collRef = collection(db, name);
-      const snapshot = await getDocs(collRef);
-
-      if (snapshot.empty) {
-        alert(`${name} コレクションにドキュメントがありません`);
-        return;
-      }
-
-      const deletePromises = snapshot.docs.map(docSnap => deleteDoc(docSnap.ref));
-      await Promise.all(deletePromises);
-
-      alert(`${name} コレクション内のドキュメントをすべて削除しました`);
-    } catch (e) {
-      console.error("削除エラー:", e);
-      alert("削除時にエラーが発生しました");
     }
   });
 });
