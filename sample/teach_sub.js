@@ -33,19 +33,20 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (/[\/\[\]\*]/.test(name)) {
-      alert("名前に / [ ] * は使えません");
+    // FirestoreのドキュメントIDに使えない文字を除外（例）
+    if (/[\/\[\]\*\#\?]/.test(name)) {
+      alert("名前に / [ ] * # ? は使えません");
       return;
     }
 
     try {
-      // schoolsコレクション → schoolNameドキュメント → usersサブコレクション → nameドキュメント
-      const userDocRef = doc(db, "schools", schoolName, "users", name);
+      // 学校名をコレクション名にして、名前をドキュメントIDにする
+      const userDocRef = doc(db, schoolName, name);
       await setDoc(userDocRef, {
         createdAt: new Date(),
         note: "初期ドキュメント"
       });
-      alert(`${schoolName} / ${name} を作成しました！`);
+      alert(`${schoolName} コレクションに ${name} を作成しました！`);
     } catch (e) {
       console.error("エラー:", e);
       alert("エラーが発生しました");
