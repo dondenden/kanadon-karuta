@@ -38,7 +38,8 @@ document.getElementById("school_name").addEventListener("change", async () => {
       console.log("既存の学校コレクションが見つかりました");
     }
 
-    // teach.html に遷移
+    // teach.html
+    //コミット
     window.location.href = "https://dondenden.github.io/kanadon-karuta/sample/teach_sub";
 
   } catch (error) {
