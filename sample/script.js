@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// Firebase設定
+// Firebase設定（あなたの設定に置き換えてください）
 const firebaseConfig = {
   apiKey: "AIzaSyCNbHkPWSQArwCg2LvoqsdJ_8yHbbP6sPs",
   authDomain: "donsuke-karuta.firebaseapp.com",
@@ -23,16 +23,17 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
     return;
   }
 
-  try {
-    // コレクション名に「name」を使用し、ドキュメントIDは例えば「initDoc」
-    const docRef = doc(db, name, "initDoc");
+  if (/[\/\[\]\*]/.test(name)) {
+    alert("名前に / [ ] * は使えません");
+    return;
+  }
 
-    // 例えば初期データを空でもOK
+  try {
+    const docRef = doc(db, name, "initDoc");
     await setDoc(docRef, {
       createdAt: new Date(),
       note: "初期ドキュメント"
     });
-
     alert(`${name} コレクションを作成しました！`);
   } catch (e) {
     console.error("エラー:", e);
