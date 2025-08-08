@@ -12,23 +12,30 @@ const firebaseConfig = {
   measurementId: "G-90L24BHDTJ"
 };
 
-// 初期化
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// フォーム送信処理
 document.getElementById("saveBtn").addEventListener("click", async () => {
-  const name = document.getElementById("name").value;
-  const message = document.getElementById("message").value;
+  const name = document.getElementById("name").value.trim();
+
+  if (!name) {
+    alert("名前を入力してください");
+    return;
+  }
 
   try {
-    await addDoc(collection(db, "messages"), {
-      name: name,
-      message: message,
-      timestamp: new Date()
+    // コレクション名に「name」を使用し、ドキュメントIDは例えば「initDoc」
+    const docRef = doc(db, name, "initDoc");
+
+    // 例えば初期データを空でもOK
+    await setDoc(docRef, {
+      createdAt: new Date(),
+      note: "初期ドキュメント"
     });
-    alert("保存しました！");
+
+    alert(`${name} コレクションを作成しました！`);
   } catch (e) {
-    console.error("保存エラー: ", e);
+    console.error("エラー:", e);
+    alert("エラーが発生しました");
   }
 });
