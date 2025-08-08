@@ -39,7 +39,7 @@ document.getElementById("school_name").addEventListener("change", async () => {
     }
 
     // teach.html に遷移
-    window.location.href = "teach.html";
+    window.location.href = "https://dondenden.github.io/kanadon-karuta/sample/teach_sub";
 
   } catch (error) {
     console.error("エラー:", error);
