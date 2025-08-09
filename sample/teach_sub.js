@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// Firebase設定（teach_index.jsと同じものを使ってください）
+// Firebase設定
 const firebaseConfig = {
   apiKey: "AIzaSyCNbHkPWSQArwCg2LvoqsdJ_8yHbbP6sPs",
   authDomain: "donsuke-karuta.firebaseapp.com",
@@ -25,6 +25,7 @@ if (!schoolName) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // 作成ボタン
   document.getElementById("saveBtn").addEventListener("click", async () => {
     const name = document.getElementById("name").value.trim();
 
@@ -32,15 +33,12 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("名前を入力してください");
       return;
     }
-
-    // FirestoreのドキュメントIDに使えない文字を除外（例）
     if (/[\/\[\]\*\#\?]/.test(name)) {
       alert("名前に / [ ] * # ? は使えません");
       return;
     }
 
     try {
-      // 学校名をコレクション名にして、名前をドキュメントIDにする
       const userDocRef = doc(db, schoolName, name);
       await setDoc(userDocRef, {
         createdAt: new Date(),
@@ -50,6 +48,25 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (e) {
       console.error("エラー:", e);
       alert("エラーが発生しました");
+    }
+  });
+
+  // 削除ボタン
+  document.getElementById("deleteBtn").addEventListener("click", async () => {
+    const name = document.getElementById("name").value.trim();
+
+    if (!name) {
+      alert("削除する名前を入力してください");
+      return;
+    }
+
+    try {
+      const userDocRef = doc(db, schoolName, name);
+      await deleteDoc(userDocRef);
+      alert(`${schoolName} コレクションの ${name} を削除しました！`);
+    } catch (e) {
+      console.error("削除エラー:", e);
+      alert("削除中にエラーが発生しました");
     }
   });
 });
