@@ -40,7 +40,7 @@ document.getElementById("school_name").addEventListener("change", async () => {
 
     // teach.html
     //コミット
-    window.location.href = `https://dondenden.github.io/kanadon-karuta/sample/teach_sub.html?school=${encodeURIComponent(schoolName)}`;
+    window.location.href = `https://dondenden.github.io/kanadon-karuta/implement/teach_sub.html?school=${encodeURIComponent(schoolName)}`;
 
   } catch (error) {
     console.error("エラー:", error);
