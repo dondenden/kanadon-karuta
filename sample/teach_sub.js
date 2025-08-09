@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // リアルタイム更新
   onSnapshot(collection(db, schoolName), (snapshot) => {
     nameList.innerHTML = "";
+    console.log("Firestore doc.id:", doc.id);
     snapshot.forEach((doc) => {
       if (doc.id.includes("_int")) return;
       const li = document.createElement("li");
