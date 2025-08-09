@@ -38,6 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
   onSnapshot(collection(db, schoolName), (snapshot) => {
     nameList.innerHTML = "";
     snapshot.forEach((doc) => {
+      // doc.id が "_int" で終わる場合はスキップ
+      if (doc.id.endsWith("_int")) return;
       const li = document.createElement("li");
       li.textContent = doc.id; // ドキュメントID（=名前）
       nameList.appendChild(li);
