@@ -1,5 +1,12 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  deleteDoc,
+  collection,
+  onSnapshot // ← 追加
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 // Firebase設定
 const firebaseConfig = {
@@ -25,48 +32,41 @@ if (!schoolName) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  const nameList = document.getElementById("nameList");
+
+  // 🔹 リアルタイムでリストを更新
+  onSnapshot(collection(db, schoolName), (snapshot) => {
+    nameList.innerHTML = "";
+    snapshot.forEach((doc) => {
+      const li = document.createElement("li");
+      li.textContent = doc.id; // ドキュメントID（=名前）
+      nameList.appendChild(li);
+    });
+  });
+
   // 作成ボタン
   document.getElementById("saveBtn").addEventListener("click", async () => {
     const name = document.getElementById("name").value.trim();
+    if (!name) return alert("名前を入力してください");
 
-    if (!name) {
-      alert("名前を入力してください");
-      return;
-    }
     if (/[\/\[\]\*\#\?]/.test(name)) {
       alert("名前に / [ ] * # ? は使えません");
       return;
     }
 
-    try {
-      const userDocRef = doc(db, schoolName, name);
-      await setDoc(userDocRef, {
-        createdAt: new Date(),
-        note: "初期ドキュメント"
-      });
-      alert(`${schoolName} コレクションに ${name} を作成しました！`);
-    } catch (e) {
-      console.error("エラー:", e);
-      alert("エラーが発生しました");
-    }
+    await setDoc(doc(db, schoolName, name), {
+      createdAt: new Date(),
+      note: "初期ドキュメント"
+    });
+    alert(`${schoolName} に ${name} を追加しました！`);
   });
 
   // 削除ボタン
   document.getElementById("deleteBtn").addEventListener("click", async () => {
     const name = document.getElementById("name").value.trim();
+    if (!name) return alert("削除する名前を入力してください");
 
-    if (!name) {
-      alert("削除する名前を入力してください");
-      return;
-    }
-
-    try {
-      const userDocRef = doc(db, schoolName, name);
-      await deleteDoc(userDocRef);
-      alert(`${schoolName} コレクションの ${name} を削除しました！`);
-    } catch (e) {
-      console.error("削除エラー:", e);
-      alert("削除中にエラーが発生しました");
-    }
+    await deleteDoc(doc(db, schoolName, name));
+    alert(`${schoolName} の ${name} を削除しました！`);
   });
 });
