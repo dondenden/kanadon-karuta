@@ -34,15 +34,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // リアルタイム更新
   onSnapshot(collection(db, schoolName), (snapshot) => {
-    nameList.innerHTML = "";
+  nameList.innerHTML = "";
+  snapshot.forEach((doc) => {
     console.log("Firestore doc.id:", doc.id);
-    snapshot.forEach((doc) => {
-      if (doc.id.includes("_int")) return;
-      const li = document.createElement("li");
-      li.textContent = doc.id;
-      nameList.appendChild(li);
-    });
+    if (doc.id.endsWith("_int")) return; // 除外条件
+    const li = document.createElement("li");
+    li.textContent = doc.id;
+    nameList.appendChild(li);
   });
+});
+
 
   // 作成ボタン
   document.getElementById("saveBtn").addEventListener("click", async () => {
