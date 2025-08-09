@@ -5,10 +5,9 @@ import {
   setDoc,
   deleteDoc,
   collection,
-  onSnapshot // ← 追加
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// Firebase設定
 const firebaseConfig = {
   apiKey: "AIzaSyCNbHkPWSQArwCg2LvoqsdJ_8yHbbP6sPs",
   authDomain: "donsuke-karuta.firebaseapp.com",
@@ -22,7 +21,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// URLパラメータからschool名を取得
 const urlParams = new URLSearchParams(window.location.search);
 const schoolName = urlParams.get("school");
 
@@ -34,14 +32,13 @@ if (!schoolName) {
 document.addEventListener("DOMContentLoaded", () => {
   const nameList = document.getElementById("nameList");
 
-  // 🔹 リアルタイムでリストを更新
+  // リアルタイム更新
   onSnapshot(collection(db, schoolName), (snapshot) => {
     nameList.innerHTML = "";
     snapshot.forEach((doc) => {
-      // doc.id が "_int" で終わる場合はスキップ
-      if (doc.id.endsWith("_int")) return;
+      if (doc.id.includes("_int")) return;
       const li = document.createElement("li");
-      li.textContent = doc.id; // ドキュメントID（=名前）
+      li.textContent = doc.id;
       nameList.appendChild(li);
     });
   });
