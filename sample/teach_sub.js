@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
   nameList.innerHTML = "";
   snapshot.forEach((doc) => {
     console.log("Firestore doc.id:", doc.id);
-    if (doc.id.endsWith("_int")) return; // 除外条件
+    if (doc.id.endsWith("_init")) return; // 除外条件
     const li = document.createElement("li");
     li.textContent = doc.id;
     nameList.appendChild(li);
