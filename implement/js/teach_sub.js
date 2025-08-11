@@ -95,6 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 🔹 前のページに戻る
   document.getElementById("backBtn").addEventListener("click", () => {
-    history.back();
+    window.location.href =`https://dondenden.github.io/kanadon-karuta/implement/teach_index`;
   });
 });
