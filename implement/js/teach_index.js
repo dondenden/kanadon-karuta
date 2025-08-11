@@ -18,8 +18,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 学校名を正規化（英数字・アンダースコア・ハイフン以外は置換）
-const normalizeSchoolName = (name) => name.replace(/[^a-zA-Z0-9_-]/g, "_");
+// 学校名を正規化（Firestore禁止文字だけ削除）
+const normalizeSchoolName = (name) => name.replace(/[\/.#$[\]]/g, "");
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("school_name").addEventListener("change", async () => {
@@ -29,6 +29,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     const schoolName = normalizeSchoolName(inputName);
+
+    if (!schoolName) {
+      alert("有効な学校名を入力してください");
+      return;
+    }
 
     try {
       // 学校コレクションの存在確認
@@ -43,8 +48,9 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("既存の学校コレクションが見つかりました");
       }
 
-      // teach_sub.html に遷移
-      window.location.href = `https://dondenden.github.io/kanadon-karuta/implement/teach_sub.html?school=${encodeURIComponent(schoolName)}`;
+      // teach_sub.html に遷移（日本語もOK）
+      window.location.href =
+        `https://dondenden.github.io/kanadon-karuta/implement/teach_sub.html?school=${encodeURIComponent(schoolName)}`;
 
     } catch (error) {
       console.error("エラー:", error);
