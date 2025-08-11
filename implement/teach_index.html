@@ -6,9 +6,16 @@
 </head>
 <body>
   <h1>先生側のメイン</h1>
-  <input type="text" id="school_name" placeholder="学校名を入力" />
+
+  <!-- ログインUI -->
+  <button id="loginBtn">Googleでログイン</button>
+  <button id="logoutBtn" style="display:none;">ログアウト</button>
+  <p id="userInfo">ログインしていません</p>
+
+  <!-- 学校名入力 -->
+  <input type="text" id="school_name" placeholder="学校名を入力" disabled />
 
   <!-- teach_index.js を読み込み -->
-  <script type="module" src="js/teach_index.js?v=202508120005"></script>
+  <script type="module" src="js/teach_index.js?v=202508120029"></script>
 </body>
 </html>
