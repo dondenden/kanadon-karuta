@@ -9,7 +9,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// Firebase設定（自分の設定に置き換え）
+// Firebase設定
 const firebaseConfig = {
   apiKey: "AIzaSyCNbHkPWSQArwCg2LvoqsdJ_8yHbbP6sPs",
   authDomain: "donsuke-karuta.firebaseapp.com",
@@ -81,17 +81,5 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     document.getElementById("name").value = ""; // 入力欄クリア
     console.log(`${schoolName} に ${name} を追加しました！`);
-  });
-
-  // 🔹 手動削除ボタン（デバッグ用）
-  document.getElementById("deleteBtn").addEventListener("click", async () => {
-    const name = document.getElementById("name").value.trim();
-    if (!name) return alert("削除する名前を入力してください");
-
-    if (confirm(`「${name}」を削除しますか？`)) {
-      await deleteDoc(doc(db, schoolName, name));
-      document.getElementById("name").value = "";
-      console.log(`${schoolName} の ${name} を削除しました！`);
-    }
   });
 });
