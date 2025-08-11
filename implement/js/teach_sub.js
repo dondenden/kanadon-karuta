@@ -36,6 +36,10 @@ if (!schoolName) {
 document.addEventListener("DOMContentLoaded", () => {
   const nameList = document.getElementById("nameList");
 
+  document.getElementById("backBtn").addEventListener("click", () => {
+    window.location.href = "https://dondenden.github.io/kanadon-karuta/implement/teach_index";
+  });
+
   // 🔹 リアルタイム更新
   onSnapshot(collection(db, schoolName), (snapshot) => {
     nameList.innerHTML = "";
@@ -82,4 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("name").value = ""; // 入力欄クリア
     console.log(`${schoolName} に ${name} を追加しました！`);
   });
+});
+
+document.getElementById("backBtn").addEventListener("click", () => {
+  history.back();
 });
