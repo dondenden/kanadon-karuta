@@ -69,10 +69,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // 学校名入力時
   schoolInput.addEventListener("change", async () => {
     const inputName = schoolInput.value.trim();
-    if (!inputName) {
-      alert("学校名を入力してください");
-      return;
-    }
+    if (!inputName) return;
+
     const schoolName = normalizeSchoolName(inputName);
 
     try {
@@ -83,15 +81,16 @@ document.addEventListener("DOMContentLoaded", () => {
       schoolIdInput.disabled = false;
 
       if (snapshot.empty) {
-        alert("この学校は存在しません。新しい学校IDを作成してください。");
+        // 新規
+        schoolIdInput.placeholder = "新規IDを入力";
         schoolIdInput.dataset.mode = "new";
       } else {
-        alert("既存の学校です。学校IDを入力してください。");
+        // 既存
+        schoolIdInput.placeholder = "学校IDを入力";
         schoolIdInput.dataset.mode = "existing";
       }
     } catch (error) {
       console.error("エラー:", error);
-      alert("データベース処理中にエラーが発生しました");
     }
   });
 
@@ -112,9 +111,8 @@ document.addEventListener("DOMContentLoaded", () => {
         createdAt: serverTimestamp(),
         schoolId: inputId
       });
-      alert("新しい学校を作成しました！");
       window.location.href =
-        `https://dondenden.github.io/kanadon-karuta/implement/teach_sub.html?school=${encodeURIComponent(schoolName)}`;
+        `teach_sub.html?school=${encodeURIComponent(schoolName)}`;
 
     } else if (mode === "existing") {
       // 既存 → IDチェック
@@ -123,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (initData && initData.schoolId === inputId) {
         window.location.href =
-          `https://dondenden.github.io/kanadon-karuta/implement/teach_sub.html?school=${encodeURIComponent(schoolName)}`;
+          `teach_sub.html?school=${encodeURIComponent(schoolName)}`;
       } else {
         alert("学校IDが間違っています");
       }
