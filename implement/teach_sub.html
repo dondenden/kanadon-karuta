@@ -7,13 +7,19 @@
 <body>
   <h1>先生側サブページ</h1>
 
-  <input type="text" id="name" placeholder="名前を入力" />
-  <button id="saveBtn">作成</button>
-
-  <ul id="nameList"></ul>
-  <br>
+  <!-- ログイン状態表示 -->
+  <p id="userInfo">ログインしていません</p>
+  <button id="logoutBtn" style="display:none;">ログアウト</button>
   <button id="backBtn">← 前のページに戻る</button>
 
-  <script type="module" src="js/teach_sub.js?v=202508120101"></script>
+  <!-- 名前追加 -->
+  <input type="text" id="name" placeholder="名前を入力" />
+  <button id="saveBtn">追加</button>
+
+  <!-- 名前一覧 -->
+  <ul id="nameList"></ul>
+
+  <!-- teach_sub.js を読み込み -->
+  <script type="module" src="js/teach_sub.js?v=202508120118"></script>
 </body>
 </html>

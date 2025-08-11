@@ -1,6 +1,6 @@
 // Firebase SDKの読み込み
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, setDoc, serverTimestamp } 
+import { getFirestore, collection, getDocs, doc, setDoc, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
@@ -22,7 +22,7 @@ const db = getFirestore(app);
 const auth = getAuth();
 const provider = new GoogleAuthProvider();
 
-// 学校名を正規化（Firestore禁止文字だけ削除）
+// Firestore禁止文字削除
 const normalizeSchoolName = (name) => name.replace(/[\/.#$[\]]/g, "");
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -30,11 +30,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = document.getElementById("logoutBtn");
   const userInfo = document.getElementById("userInfo");
   const schoolInput = document.getElementById("school_name");
-
-  // 🔹 前のページに戻る
-  document.getElementById("backBtn").addEventListener("click", () => {
-    window.location.href =`https://dondenden.github.io/kanadon-karuta/implement/index`;
-  });
+  const schoolIdContainer = document.getElementById("schoolIdContainer");
+  const schoolIdInput = document.getElementById("school_id");
+  const confirmBtn = document.getElementById("confirmBtn");
+  const backBtn = document.getElementById("backBtn");
 
   // ログイン
   loginBtn.addEventListener("click", async () => {
@@ -63,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
       loginBtn.style.display = "inline";
       logoutBtn.style.display = "none";
       schoolInput.disabled = true;
+      schoolIdContainer.style.display = "none";
     }
   });
 
@@ -75,30 +75,63 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const schoolName = normalizeSchoolName(inputName);
 
-    if (!schoolName) {
-      alert("有効な学校名を入力してください");
-      return;
-    }
-
     try {
-      // 学校コレクションの存在確認
       const schoolRef = collection(db, schoolName);
       const snapshot = await getDocs(schoolRef);
 
+      schoolIdContainer.style.display = "block";
+      schoolIdInput.disabled = false;
+
       if (snapshot.empty) {
-        await setDoc(doc(db, schoolName, "_init"), { createdAt: serverTimestamp() });
-        console.log("新しい学校コレクションを作成しました");
+        alert("この学校は存在しません。新しい学校IDを作成してください。");
+        schoolIdInput.dataset.mode = "new";
       } else {
-        console.log("既存の学校コレクションが見つかりました");
+        alert("既存の学校です。学校IDを入力してください。");
+        schoolIdInput.dataset.mode = "existing";
       }
-
-      // teach_sub.html に遷移
-      window.location.href =
-        `https://dondenden.github.io/kanadon-karuta/implement/teach_sub.html?school=${encodeURIComponent(schoolName)}`;
-
     } catch (error) {
       console.error("エラー:", error);
       alert("データベース処理中にエラーが発生しました");
     }
+  });
+
+  // 次へボタン
+  confirmBtn.addEventListener("click", async () => {
+    const schoolName = normalizeSchoolName(schoolInput.value.trim());
+    const inputId = schoolIdInput.value.trim();
+    const mode = schoolIdInput.dataset.mode;
+
+    if (!inputId) {
+      alert("学校IDを入力してください");
+      return;
+    }
+
+    if (mode === "new") {
+      // 新規作成
+      await setDoc(doc(db, schoolName, "_init"), {
+        createdAt: serverTimestamp(),
+        schoolId: inputId
+      });
+      alert("新しい学校を作成しました！");
+      window.location.href =
+        `https://dondenden.github.io/kanadon-karuta/implement/teach_sub.html?school=${encodeURIComponent(schoolName)}`;
+
+    } else if (mode === "existing") {
+      // 既存 → IDチェック
+      const initSnap = await getDocs(collection(db, schoolName));
+      const initData = initSnap.docs.find(doc => doc.id === "_init")?.data();
+
+      if (initData && initData.schoolId === inputId) {
+        window.location.href =
+          `https://dondenden.github.io/kanadon-karuta/implement/teach_sub.html?school=${encodeURIComponent(schoolName)}`;
+      } else {
+        alert("学校IDが間違っています");
+      }
+    }
+  });
+
+  // 戻るボタン
+  backBtn.addEventListener("click", () => {
+    history.back();
   });
 });

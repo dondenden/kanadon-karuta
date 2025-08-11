@@ -14,10 +14,17 @@
 
   <!-- 学校名入力 -->
   <input type="text" id="school_name" placeholder="学校名を入力" disabled />
+
+  <!-- 学校ID入力（最初は非表示） -->
+  <div id="schoolIdContainer" style="display:none; margin-top: 10px;">
+    <input type="text" id="school_id" placeholder="学校IDを入力" disabled />
+    <button id="confirmBtn">次へ</button>
+  </div>
+
   <br>
   <button id="backBtn">← 前のページに戻る</button>
 
   <!-- teach_index.js を読み込み -->
-  <script type="module" src="js/teach_index.js?v=202508120100"></script>
+  <script type="module" src="js/teach_index.js?v=202508120118"></script>
 </body>
 </html>

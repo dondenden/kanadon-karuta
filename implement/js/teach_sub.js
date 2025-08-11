@@ -10,7 +10,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import {
   getAuth,
-  onAuthStateChanged
+  onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 // Firebase設定
@@ -27,46 +28,65 @@ const firebaseConfig = {
 // Firebase初期化
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
-
-// 🔹 認証保護（未ログインなら teach_index.html に戻す）
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    alert("このページを見るにはログインが必要です");
-    window.location.href = "teach_index.html";
-  }
-});
+const auth = getAuth();
 
 // URLパラメータから学校名取得
 const urlParams = new URLSearchParams(window.location.search);
 const schoolName = urlParams.get("school");
+
 if (!schoolName) {
   alert("学校名がURLパラメータに指定されていません");
   throw new Error("学校名がURLパラメータに指定されていません");
 }
 
+// 認証チェック
+onAuthStateChanged(auth, (user) => {
+  const userInfo = document.getElementById("userInfo");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (user) {
+    userInfo.textContent = `${user.displayName} さんでログイン中`;
+    logoutBtn.style.display = "inline";
+  } else {
+    alert("ログインが必要です");
+    window.location.href =
+      "https://dondenden.github.io/kanadon-karuta/implement/teach_index.html";
+  }
+});
+
+// ログアウト処理
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  await signOut(auth);
+  window.location.href =
+    "https://dondenden.github.io/kanadon-karuta/implement/teach_index.html";
+});
+
+// 戻るボタン
+document.getElementById("backBtn").addEventListener("click", () => {
+  history.back();
+});
+
+// 名前一覧のリアルタイム取得
 document.addEventListener("DOMContentLoaded", () => {
   const nameList = document.getElementById("nameList");
 
-  // 🔹 リアルタイム更新
   onSnapshot(collection(db, schoolName), (snapshot) => {
     nameList.innerHTML = "";
     snapshot.forEach((docSnap) => {
-      if (docSnap.id.endsWith("_init")) return; // _initは表示しない
+      if (docSnap.id.endsWith("_init")) return;
 
       const li = document.createElement("li");
-
       const nameSpan = document.createElement("span");
       nameSpan.textContent = docSnap.id;
       li.appendChild(nameSpan);
 
+      // 削除ボタン
       const delBtn = document.createElement("button");
       delBtn.textContent = "削除";
       delBtn.style.marginLeft = "10px";
       delBtn.addEventListener("click", async () => {
         if (confirm(`「${docSnap.id}」を削除しますか？`)) {
           await deleteDoc(doc(db, schoolName, docSnap.id));
-          console.log(`${docSnap.id} を削除しました`);
         }
       });
       li.appendChild(delBtn);
@@ -75,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 🔹 作成ボタン
+  // 名前追加
   document.getElementById("saveBtn").addEventListener("click", async () => {
     const name = document.getElementById("name").value.trim();
     if (!name) return alert("名前を入力してください");
@@ -90,11 +110,5 @@ document.addEventListener("DOMContentLoaded", () => {
       note: "初期ドキュメント"
     });
     document.getElementById("name").value = "";
-    console.log(`${schoolName} に ${name} を追加しました！`);
-  });
-
-  // 🔹 前のページに戻る
-  document.getElementById("backBtn").addEventListener("click", () => {
-    window.location.href =`https://dondenden.github.io/kanadon-karuta/implement/teach_index`;
   });
 });
