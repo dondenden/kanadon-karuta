@@ -39,6 +39,9 @@ if (!schoolName) {
   throw new Error("学校名がURLパラメータに指定されていません");
 }
 
+// 学校IDを画面に表示
+document.getElementById("schoolId").textContent = schoolName;
+
 // 認証チェック
 onAuthStateChanged(auth, (user) => {
   const userInfo = document.getElementById("userInfo");
