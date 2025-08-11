@@ -5,9 +5,11 @@ import {
   setDoc,
   deleteDoc,
   collection,
-  onSnapshot
+  onSnapshot,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+// Firebase設定（自分の設定に置き換え）
 const firebaseConfig = {
   apiKey: "AIzaSyCNbHkPWSQArwCg2LvoqsdJ_8yHbbP6sPs",
   authDomain: "donsuke-karuta.firebaseapp.com",
@@ -18,9 +20,11 @@ const firebaseConfig = {
   measurementId: "G-90L24BHDTJ"
 };
 
+// Firebase初期化
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// URLパラメータから学校名取得
 const urlParams = new URLSearchParams(window.location.search);
 const schoolName = urlParams.get("school");
 
@@ -32,20 +36,36 @@ if (!schoolName) {
 document.addEventListener("DOMContentLoaded", () => {
   const nameList = document.getElementById("nameList");
 
-  // リアルタイム更新
+  // 🔹 リアルタイム更新
   onSnapshot(collection(db, schoolName), (snapshot) => {
-  nameList.innerHTML = "";
-  snapshot.forEach((doc) => {
-    console.log("Firestore doc.id:", doc.id);
-    if (doc.id.endsWith("_init")) return; // 除外条件
-    const li = document.createElement("li");
-    li.textContent = doc.id;
-    nameList.appendChild(li);
+    nameList.innerHTML = "";
+    snapshot.forEach((docSnap) => {
+      if (docSnap.id.endsWith("_init")) return; // _initは表示しない
+
+      const li = document.createElement("li");
+
+      // 名前表示
+      const nameSpan = document.createElement("span");
+      nameSpan.textContent = docSnap.id;
+      li.appendChild(nameSpan);
+
+      // 削除ボタン
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "削除";
+      delBtn.style.marginLeft = "10px";
+      delBtn.addEventListener("click", async () => {
+        if (confirm(`「${docSnap.id}」を削除しますか？`)) {
+          await deleteDoc(doc(db, schoolName, docSnap.id));
+          console.log(`${docSnap.id} を削除しました`);
+        }
+      });
+      li.appendChild(delBtn);
+
+      nameList.appendChild(li);
+    });
   });
-});
 
-
-  // 作成ボタン
+  // 🔹 作成ボタン
   document.getElementById("saveBtn").addEventListener("click", async () => {
     const name = document.getElementById("name").value.trim();
     if (!name) return alert("名前を入力してください");
@@ -56,18 +76,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     await setDoc(doc(db, schoolName, name), {
-      createdAt: new Date(),
+      createdAt: serverTimestamp(),
       note: "初期ドキュメント"
     });
-    alert(`${schoolName} に ${name} を追加しました！`);
+    document.getElementById("name").value = ""; // 入力欄クリア
+    console.log(`${schoolName} に ${name} を追加しました！`);
   });
 
-  // 削除ボタン
+  // 🔹 手動削除ボタン（デバッグ用）
   document.getElementById("deleteBtn").addEventListener("click", async () => {
     const name = document.getElementById("name").value.trim();
     if (!name) return alert("削除する名前を入力してください");
 
-    await deleteDoc(doc(db, schoolName, name));
-    alert(`${schoolName} の ${name} を削除しました！`);
+    if (confirm(`「${name}」を削除しますか？`)) {
+      await deleteDoc(doc(db, schoolName, name));
+      document.getElementById("name").value = "";
+      console.log(`${schoolName} の ${name} を削除しました！`);
+    }
   });
 });
