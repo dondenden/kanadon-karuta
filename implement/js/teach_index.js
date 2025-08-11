@@ -31,6 +31,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const userInfo = document.getElementById("userInfo");
   const schoolInput = document.getElementById("school_name");
 
+  // 🔹 前のページに戻る
+  document.getElementById("backBtn").addEventListener("click", () => {
+    window.location.href =`https://dondenden.github.io/kanadon-karuta/implement/index`;
+  });
+
   // ログイン
   loginBtn.addEventListener("click", async () => {
     try {
