@@ -6,7 +6,8 @@ import {
   deleteDoc,
   collection,
   onSnapshot,
-  serverTimestamp
+  serverTimestamp,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import {
   getAuth,
@@ -14,6 +15,7 @@ import {
   signOut
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
+// Firebase設定
 const firebaseConfig = {
   apiKey: "AIzaSyCNbHkPWSQArwCg2LvoqsdJ_8yHbbP6sPs",
   authDomain: "donsuke-karuta.firebaseapp.com",
@@ -24,10 +26,12 @@ const firebaseConfig = {
   measurementId: "G-90L24BHDTJ"
 };
 
+// Firebase初期化
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth();
 
+// URLパラメータから学校名取得（コレクション名）
 const urlParams = new URLSearchParams(window.location.search);
 const schoolName = urlParams.get("school");
 
@@ -36,8 +40,25 @@ if (!schoolName) {
   throw new Error("学校名がURLパラメータに指定されていません");
 }
 
-document.getElementById("schoolId").textContent = schoolName;
+// schoolIdを取得して表示
+async function loadSchoolId() {
+  try {
+    const initDocRef = doc(db, schoolName, "_init");
+    const initDocSnap = await getDoc(initDocRef);
 
+    if (initDocSnap.exists()) {
+      const data = initDocSnap.data();
+      document.getElementById("schoolId").textContent = data.schoolId || "(未設定)";
+    } else {
+      document.getElementById("schoolId").textContent = "(未登録)";
+    }
+  } catch (err) {
+    console.error("schoolId取得エラー:", err);
+    document.getElementById("schoolId").textContent = "(取得失敗)";
+  }
+}
+
+// 認証チェック
 onAuthStateChanged(auth, (user) => {
   const userInfo = document.getElementById("userInfo");
   const logoutBtn = document.getElementById("logoutBtn");
@@ -45,6 +66,7 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     userInfo.textContent = `${user.displayName} さんでログイン中`;
     logoutBtn.style.display = "inline";
+    loadSchoolId();
   } else {
     alert("ログインが必要です");
     window.location.href =
@@ -52,16 +74,19 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
+// ログアウト処理
 document.getElementById("logoutBtn").addEventListener("click", async () => {
   await signOut(auth);
   window.location.href =
     "https://dondenden.github.io/kanadon-karuta/implement/teach_index.html";
 });
 
+// 戻るボタン
 document.getElementById("backBtn").addEventListener("click", () => {
   history.back();
 });
 
+// 名前一覧のリアルタイム取得
 document.addEventListener("DOMContentLoaded", () => {
   const nameList = document.getElementById("nameList");
 
@@ -75,6 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
       nameSpan.textContent = docSnap.id;
       li.appendChild(nameSpan);
 
+      // 削除ボタン
       const delBtn = document.createElement("button");
       delBtn.textContent = "削除";
       delBtn.style.marginLeft = "10px";
@@ -89,6 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // 名前追加
   document.getElementById("saveBtn").addEventListener("click", async () => {
     const name = document.getElementById("name").value.trim();
     if (!name) return alert("名前を入力してください");
