@@ -8,6 +8,10 @@ import {
   onSnapshot,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 // Firebase設定
 const firebaseConfig = {
@@ -23,11 +27,19 @@ const firebaseConfig = {
 // Firebase初期化
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+
+// 🔹 認証保護（未ログインなら teach_index.html に戻す）
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    alert("このページを見るにはログインが必要です");
+    window.location.href = "teach_index.html";
+  }
+});
 
 // URLパラメータから学校名取得
 const urlParams = new URLSearchParams(window.location.search);
 const schoolName = urlParams.get("school");
-
 if (!schoolName) {
   alert("学校名がURLパラメータに指定されていません");
   throw new Error("学校名がURLパラメータに指定されていません");
@@ -35,10 +47,6 @@ if (!schoolName) {
 
 document.addEventListener("DOMContentLoaded", () => {
   const nameList = document.getElementById("nameList");
-
-  document.getElementById("backBtn").addEventListener("click", () => {
-    window.location.href = "https://dondenden.github.io/kanadon-karuta/implement/teach_index";
-  });
 
   // 🔹 リアルタイム更新
   onSnapshot(collection(db, schoolName), (snapshot) => {
@@ -48,12 +56,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const li = document.createElement("li");
 
-      // 名前表示
       const nameSpan = document.createElement("span");
       nameSpan.textContent = docSnap.id;
       li.appendChild(nameSpan);
 
-      // 削除ボタン
       const delBtn = document.createElement("button");
       delBtn.textContent = "削除";
       delBtn.style.marginLeft = "10px";
@@ -83,11 +89,12 @@ document.addEventListener("DOMContentLoaded", () => {
       createdAt: serverTimestamp(),
       note: "初期ドキュメント"
     });
-    document.getElementById("name").value = ""; // 入力欄クリア
+    document.getElementById("name").value = "";
     console.log(`${schoolName} に ${name} を追加しました！`);
   });
-});
 
-document.getElementById("backBtn").addEventListener("click", () => {
-  history.back();
+  // 🔹 前のページに戻る
+  document.getElementById("backBtn").addEventListener("click", () => {
+    history.back();
+  });
 });

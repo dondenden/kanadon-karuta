@@ -2,21 +2,18 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>名前でコレクション作成＆削除</title>
+  <title>先生側サブページ</title>
 </head>
 <body>
-  <h1>名前でコレクション作成＆削除</h1>
-
-  <label for="name">名前を入力：</label>
-  <input type="text" id="name" placeholder="例: yamada" />
-  <button id="saveBtn">コレクション作成</button>
-
-  <h2>登録されている名前一覧</h2>
-  <ul id="nameList"></ul> <!-- 🔹 リアルタイム表示用 -->
+  <h1>先生側サブページ</h1>
 
   <button id="backBtn">← 前のページに戻る</button>
 
-  <!-- teach_sub.js を読み込み -->
-  <script type="module" src="js/teach_sub.js?v=202508120045"></script>
+  <input type="text" id="name" placeholder="名前を入力" />
+  <button id="saveBtn">作成</button>
+
+  <ul id="nameList"></ul>
+
+  <script type="module" src="js/teach_sub.js?v=202508120052"></script>
 </body>
 </html>
