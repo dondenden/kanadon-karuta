@@ -7,7 +7,8 @@ import {
   collection,
   onSnapshot,
   serverTimestamp,
-  getDoc
+  getDoc,
+  getDocs
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import {
   getAuth,
@@ -131,4 +132,47 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     document.getElementById("name").value = "";
   });
+});
+
+// 学校全削除ボタン（学校ID確認付き）
+document.getElementById("deleteSchoolBtn").addEventListener("click", async () => {
+  try {
+    // Firestoreから学校ID取得
+    const initDocRef = doc(db, schoolName, "_init");
+    const initDocSnap = await getDoc(initDocRef);
+
+    if (!initDocSnap.exists()) {
+      alert("この学校は存在しません");
+      return;
+    }
+
+    const data = initDocSnap.data();
+    const correctSchoolId = data.schoolId;
+
+    // 学校ID確認
+    const enteredId = prompt(`削除確認のため、学校IDを入力してください（${schoolName}）:`);
+    if (enteredId === null) return; // キャンセル
+
+    if (enteredId !== correctSchoolId) {
+      alert("学校IDが一致しません。削除できません。");
+      return;
+    }
+
+    if (!confirm(`学校「${schoolName}」の全データを削除します。よろしいですか？`)) return;
+
+    // コレクション内全削除
+    const colRef = collection(db, schoolName);
+    const snapshot = await getDocs(colRef);
+
+    for (const docSnap of snapshot.docs) {
+      await deleteDoc(doc(db, schoolName, docSnap.id));
+    }
+
+    alert(`学校「${schoolName}」のデータを削除しました`);
+    window.location.href =
+      "https://dondenden.github.io/kanadon-karuta/implement/teach_index.html";
+  } catch (err) {
+    console.error("削除エラー:", err);
+    alert("削除中にエラーが発生しました");
+  }
 });
