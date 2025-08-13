@@ -1,18 +1,18 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import {
   getFirestore,
   collection,
   getDocs,
   doc,
   getDoc
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 // Firebase設定
 const firebaseConfig = {
@@ -27,80 +27,78 @@ const firebaseConfig = {
 
 // Firebase初期化
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
+const auth = getAuth();
 const provider = new GoogleAuthProvider();
 
-// ログインボタン
-document.getElementById("loginBtn").addEventListener("click", async () => {
+// HTML要素
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const userInfo = document.getElementById("userInfo");
+const schoolInput = document.getElementById("school_name");
+const schoolIdContainer = document.getElementById("schoolIdContainer");
+const schoolIdInput = document.getElementById("school_id");
+const confirmBtn = document.getElementById("confirmBtn");
+
+// ログイン
+loginBtn.addEventListener("click", async () => {
   try {
     await signInWithPopup(auth, provider);
-  } catch (err) {
-    console.error("ログインエラー:", err);
+  } catch (error) {
+    console.error(error);
     alert("ログインに失敗しました");
   }
 });
 
-// ログアウトボタン
-document.getElementById("logoutBtn").addEventListener("click", async () => {
-  try {
-    await signOut(auth);
-  } catch (err) {
-    console.error("ログアウトエラー:", err);
-  }
+// ログアウト
+logoutBtn.addEventListener("click", async () => {
+  await signOut(auth);
 });
 
-// 認証状態の監視
+// 認証状態監視
 onAuthStateChanged(auth, (user) => {
-  const loginBtn = document.getElementById("loginBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const userInfo = document.getElementById("userInfo");
-  const schoolIdContainer = document.getElementById("schoolIdContainer");
-
   if (user) {
+    userInfo.textContent = `${user.displayName} さんでログイン中`;
     loginBtn.style.display = "none";
     logoutBtn.style.display = "inline";
-    userInfo.textContent = `${user.displayName} さんでログイン中`;
-    schoolIdContainer.style.display = "block";
+    schoolInput.disabled = false;
   } else {
+    userInfo.textContent = "ログインしていません";
     loginBtn.style.display = "inline";
     logoutBtn.style.display = "none";
-    userInfo.textContent = "ログインしていません";
+    schoolInput.disabled = true;
     schoolIdContainer.style.display = "none";
   }
 });
 
-// 「次へ」ボタン
-document.getElementById("goBtn").addEventListener("click", async () => {
-  const inputId = document.getElementById("schoolIdInput").value.trim();
-  if (!inputId) {
-    alert("学校IDを入力してください");
-    return;
+// 学校名入力 → 存在確認
+schoolInput.addEventListener("change", async () => {
+  const schoolName = schoolInput.value.trim();
+  if (!schoolName) return alert("学校名を入力してください");
+
+  const schoolRef = collection(db, schoolName);
+  const snapshot = await getDocs(schoolRef);
+
+  if (!snapshot.empty) {
+    schoolIdContainer.style.display = "block";
+  } else {
+    alert("その学校は登録されていません");
+    schoolIdContainer.style.display = "none";
   }
+});
 
-  try {
-    // Firestore全コレクションから学校IDを探す
-    // （本番では効率化のため別の方法推奨）
-    const schoolList = ["SampleSchool", "TestSchool"]; // デモ用、動的取得なら別途API化
-    let foundSchool = null;
+// ID確認して次のページへ
+confirmBtn.addEventListener("click", async () => {
+  const schoolName = schoolInput.value.trim();
+  const inputId = schoolIdInput.value.trim();
 
-    for (const schoolName of schoolList) {
-      const initDocRef = doc(db, schoolName, "_init");
-      const initSnap = await getDoc(initDocRef);
-      if (initSnap.exists() && initSnap.data().schoolId === inputId) {
-        foundSchool = schoolName;
-        break;
-      }
-    }
+  if (!schoolName || !inputId) return alert("学校名と学校IDを入力してください");
 
-    if (foundSchool) {
-      window.location.href =
-        `https://dondenden.github.io/kanadon-karuta/implement/student_main.html?school=${encodeURIComponent(foundSchool)}`;
-    } else {
-      alert("学校IDが見つかりません");
-    }
-  } catch (err) {
-    console.error("学校ID検索エラー:", err);
-    alert("検索中にエラーが発生しました");
+  const initSnap = await getDoc(doc(db, schoolName, "_init"));
+  if (initSnap.exists() && initSnap.data().schoolId === inputId) {
+    window.location.href =
+      `https://dondenden.github.io/kanadon-karuta/implement/student_main.html?school=${encodeURIComponent(schoolName)}`;
+  } else {
+    alert("学校IDが間違っています");
   }
 });
